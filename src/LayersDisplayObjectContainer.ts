@@ -65,12 +65,12 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
      * @param layer 待添加的弹窗显示对象
      * @returns this
      * 
-     * 方法可能会因为下面的原因失败（下列大部分方法同此）：
-     *  Error   Layers 容器还未添加到父容器/舞台便调用此方法时会抛出
+     * 方法可能抛出的异常：
+     *  Error   LayersDisplayObjectContainer 实例还未调用 ensureBasicStyle 进行初始化
      */
     push(layer: egret.DisplayObject): this {
         if (!this.hasEnsureBasicStyle) {
-            throw new Error('LayersDisplayObjectContainer：Layers 容器还未挂载，请确保已调用 ensureBasicStyle')
+            throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
         }
 
         let lastLayer = this.layers[this.layers.length - 1]
@@ -101,7 +101,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
 
     pop() {
         if (!this.hasEnsureBasicStyle) {
-            throw new Error('LayersDisplayObjectContainer：Layers 容器还未挂载，请确保已调用 ensureBasicStyle')
+            throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
         }
 
         let layer = this.layers.pop()
@@ -132,9 +132,9 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         return this
     }
 
-    replace(layer: egret.DisplayObjectContainer) {
+    replace(layer: egret.DisplayObject) {
         if (!this.hasEnsureBasicStyle) {
-            throw new Error('LayersDisplayObjectContainer：Layers 容器还未挂载，请确保已调用 ensureBasicStyle')
+            throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
         }
 
         this.layerBox.removeChildren()
