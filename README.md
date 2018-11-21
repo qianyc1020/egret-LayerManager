@@ -83,3 +83,9 @@ declear class Layer extends egret.Sprite {
     constructor(mountTo: LayersDisplayObjectContainer)
 }
 ```
+
+## 相关链接
+
+* [场景管理 - SceneManager](https://gist.github.com/yangfch3/30ba6b05e9f1f015a9c82aa10077dda0)
+* [音频管理 - SoundManager](https://gist.github.com/yangfch3/c00c3b14cd54937a878b5f5e0cdbc4f9)
+* [pomelo 客户端小程序/小游戏版: pomelo-client-wx](https://github.com/yangfch3/pomelo-client-wx)
