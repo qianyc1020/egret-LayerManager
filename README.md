@@ -38,7 +38,16 @@ declear class LayersDisplayObjectContainer extends egret.DisplayObjectContainer 
     pop(): void
 
     /**
-     * 用一个 Layer 来替换顶层 Layer
+     * 用一个 Layer 替换顶层的 Layer
+     * 
+     * 方法可能抛出的异常：
+     *   Error   LayersDisplayObjectContainer 实例还未调用 ensureBasicStyle 进行初始化
+     *   Error   LayersDisplayObjectContainer：Layer 栈为空，无法替换
+     */
+    replacePeak(layer: egret.DisplayObject): void
+
+    /**
+     * 清空所有 Layer，再推入一个 Layer
      * 
      * 方法可能抛出的异常：
      *   Error   LayersDisplayObjectContainer 实例还未调用 ensureBasicStyle 进行初始化
