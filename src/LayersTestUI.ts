@@ -98,7 +98,7 @@ class LayersTestUI extends LayersDisplayObjectContainer {
          */
         let layer = new Layer(this)
         layer.width = 400
-        layer.height = 520 + Math.round(Math.random() * 200)
+        layer.height = 560 + Math.round(Math.random() * 120)
         layer.graphics.beginFill(0x444444 * Math.ceil(Math.random() * 3))
         layer.graphics.drawRect(0, 0, layer.width, layer.height)
         layer.graphics.endFill()
@@ -118,6 +118,9 @@ class LayersTestUI extends LayersDisplayObjectContainer {
         btn1.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
             let layer = this.buildTestLayer()
             this.push(layer)
+            // if (this.layerID >= 3) {
+            //     this.setCloseBtnPos(400 + Math.round(Math.random() * 100), 800 + Math.round(Math.random() * 100))
+            // }
         }, this)
 
         let btn2 = new PureColorButton(240, 70, 52, '关闭当前 Layer', 0X000000, 0XFFFFFF)
@@ -128,7 +131,7 @@ class LayersTestUI extends LayersDisplayObjectContainer {
             this.pop()
         }, this)
 
-        let btn3 = new PureColorButton(240, 70, 52, '用新 Layer 替换', 0X000000, 0XFFFFFF)
+        let btn3 = new PureColorButton(240, 70, 52, 'replace', 0X000000, 0XFFFFFF)
         layer.addChild(btn3)
         btn3.x = btn1.x
         btn3.y = btn2.height + btn2.y + 20
@@ -137,11 +140,20 @@ class LayersTestUI extends LayersDisplayObjectContainer {
             this.replace(layer)
         }, this)
 
-        let btn4 = new PureColorButton(240, 70, 52, '清空 Layers', 0X000000, 0XFFFFFF)
+        let btn4 = new PureColorButton(240, 70, 52, 'replacePeak', 0X000000, 0XFFFFFF)
         layer.addChild(btn4)
         btn4.x = btn1.x
         btn4.y = btn3.height + btn3.y + 20
         btn4.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
+            let layer = this.buildTestLayer()
+            this.replacePeak(layer)
+        }, this)
+
+        let btn5 = new PureColorButton(240, 70, 52, '清空 Layers', 0X000000, 0XFFFFFF)
+        layer.addChild(btn5)
+        btn5.x = btn1.x
+        btn5.y = btn4.height + btn4.y + 20
+        btn5.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
             this.clear()
         }, this)
 

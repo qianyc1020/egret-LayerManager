@@ -4,6 +4,9 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     private closeBtn: egret.Sprite
 
     protected layers: Array<egret.DisplayObject>
+    private closeBtnPosCache: {
+        [propName: number]: egret.Point
+    }
 
     private hasEnsureBasicStyle: boolean
 
@@ -29,6 +32,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         closeBtn.cacheAsBitmap = true
 
         this.layers = []
+        this.closeBtnPosCache = {}
 
         this.cover.touchEnabled = true
         this.cover.addEventListener(egret.TouchEvent.TOUCH_TAP, function (event) {
@@ -107,6 +111,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         let layer = this.layers.pop()
         if (layer) {
             this.layerBox.removeChild(layer)
+            delete this.closeBtnPosCache[this.layers.length]
             this.dispatchEvent(new egret.Event('popLayer', false, false, {
                 layer: layer
             }))
@@ -132,6 +137,28 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         return this
     }
 
+    replacePeak(layer: egret.DisplayObject) {
+        if (!this.hasEnsureBasicStyle) {
+            throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
+        }
+        let replaceLayer = this.layers.pop()
+
+        if (!replaceLayer) {
+            throw new Error('LayersDisplayObjectContainer：Layer 栈为空，无法替换')
+        }
+
+        this.layerBox.removeChild(replaceLayer)
+        delete this.closeBtnPosCache[this.layers.length]
+
+        this.layerBox.addChild(layer)
+        this.layers.push(layer)
+
+        layer.visible = true
+
+        this.layoutLayer(layer)
+        return this
+    }
+
     replace(layer: egret.DisplayObject) {
         if (!this.hasEnsureBasicStyle) {
             throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
@@ -139,6 +166,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
 
         this.layerBox.removeChildren()
         this.layers = []
+        this.closeBtnPosCache = {}
 
         this.layerBox.addChild(layer)
         this.layers.push(layer)
@@ -179,9 +207,15 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     }
 
     private layoutCloseBtn() {
-        let layer = this.layers[this.layers.length - 1]
-        this.closeBtn.x = this.width / 2 - this.closeBtn.width / 2
-        this.closeBtn.y = layer.y + layer.height / 2 + 50
+        let index = this.layers.length - 1
+        let layer = this.layers[index]
+        if (this.closeBtnPosCache[index]) {
+            this.closeBtn.x = this.closeBtnPosCache[index].x
+            this.closeBtn.y = this.closeBtnPosCache[index].y
+        } else {
+            this.closeBtn.x = this.width / 2 - this.closeBtn.width / 2
+            this.closeBtn.y = layer.y + layer.height / 2 + 50
+        }
     }
 
     setLayoutLayerPos(layer: egret.DisplayObject, x: number, y: number) {
@@ -192,6 +226,8 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     setCloseBtnPos(x: number, y: number) {
         x !== undefined && (this.closeBtn.x = x)
         y !== undefined && (this.closeBtn.y = y)
+
+        this.closeBtnPosCache[this.layers.length - 1] = new egret.Point(x, y)
     }
 
     hideCloseBtn() {
@@ -205,6 +241,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     private emptyHandler() {
         this.layerBox.removeChildren()
         this.layers = []
+        this.closeBtnPosCache = {}
 
         if (this.cover.parent) {
             this.removeChild(this.cover)
