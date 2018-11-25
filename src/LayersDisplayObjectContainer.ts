@@ -4,8 +4,12 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     private closeBtn: egret.Sprite
 
     protected layers: Array<egret.DisplayObject>
-    private closeBtnPosCache: {
-        [propName: number]: egret.Point
+    private closeBtnPropCache: {
+        [propName: number]: {
+            visible?: boolean
+            x?: number
+            y?: number
+        }
     }
 
     private hasEnsureBasicStyle: boolean
@@ -32,7 +36,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         closeBtn.cacheAsBitmap = true
 
         this.layers = []
-        this.closeBtnPosCache = {}
+        this.closeBtnPropCache = {}
 
         this.cover.touchEnabled = true
         this.cover.addEventListener(egret.TouchEvent.TOUCH_TAP, function (event) {
@@ -111,7 +115,7 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         let layer = this.layers.pop()
         if (layer) {
             this.layerBox.removeChild(layer)
-            delete this.closeBtnPosCache[this.layers.length]
+            delete this.closeBtnPropCache[this.layers.length]
             this.dispatchEvent(new egret.Event('popLayer', false, false, {
                 layer: layer
             }))
@@ -141,21 +145,9 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         if (!this.hasEnsureBasicStyle) {
             throw new Error('LayersDisplayObjectContainer：请先调用 ensureBasicStyle 进行初始化')
         }
-        let replaceLayer = this.layers.pop()
 
-        if (!replaceLayer) {
-            throw new Error('LayersDisplayObjectContainer：Layer 栈为空，无法替换')
-        }
-
-        this.layerBox.removeChild(replaceLayer)
-        delete this.closeBtnPosCache[this.layers.length]
-
-        this.layerBox.addChild(layer)
-        this.layers.push(layer)
-
-        layer.visible = true
-
-        this.layoutLayer(layer)
+        this.pop()
+        this.push(layer)
         return this
     }
 
@@ -166,14 +158,9 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
 
         this.layerBox.removeChildren()
         this.layers = []
-        this.closeBtnPosCache = {}
+        this.closeBtnPropCache = {}
 
-        this.layerBox.addChild(layer)
-        this.layers.push(layer)
-
-        layer.visible = true
-
-        this.layoutLayer(layer)
+        this.push(layer)
         return this
     }
 
@@ -204,44 +191,53 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
             this.addChild(this.layerBox)
             this.addChild(this.closeBtn)
         }
+
+        let index = this.layers.length - 1
+        this.closeBtnPropCache[index] = {
+            visible: this.closeBtnPropCache[index - 1] ? this.closeBtnPropCache[index - 1].visible : true,
+            x: this.closeBtn.x,
+            y: this.closeBtn.y
+        }
     }
 
     private layoutCloseBtn() {
         let index = this.layers.length - 1
-        let layer = this.layers[index]
-        if (this.closeBtnPosCache[index]) {
-            this.closeBtn.x = this.closeBtnPosCache[index].x
-            this.closeBtn.y = this.closeBtnPosCache[index].y
-        } else {
-            this.closeBtn.x = this.width / 2 - this.closeBtn.width / 2
-            this.closeBtn.y = layer.y + layer.height / 2 + 50
-        }
+        
+        this.closeBtn.x = this.closeBtnPropCache[index].x
+        this.closeBtn.y = this.closeBtnPropCache[index].y
+        this.closeBtn.visible = this.closeBtnPropCache[index].visible
+
     }
 
     setLayoutLayerPos(layer: egret.DisplayObject, x: number, y: number) {
-        x !== undefined && (layer.x = x)
-        y !== undefined && (layer.y = y)
+        layer.x = x
+        layer.y = y
     }
 
     setCloseBtnPos(x: number, y: number) {
-        x !== undefined && (this.closeBtn.x = x)
-        y !== undefined && (this.closeBtn.y = y)
-
-        this.closeBtnPosCache[this.layers.length - 1] = new egret.Point(x, y)
+        this.closeBtn.x = x
+        this.closeBtn.y = y
+        let index = this.layers.length - 1
+        this.closeBtnPropCache[index].x = x
+        this.closeBtnPropCache[index].y = y
     }
 
     hideCloseBtn() {
         this.closeBtn.visible = false
+        let index = this.layers.length - 1
+        this.closeBtnPropCache[index].visible = false
     }
 
     showCloseBtn() {
         this.closeBtn.visible = true
+        let index = this.layers.length - 1
+        this.closeBtnPropCache[index].visible = true
     }
 
     private emptyHandler() {
         this.layerBox.removeChildren()
         this.layers = []
-        this.closeBtnPosCache = {}
+        this.closeBtnPropCache = {}
 
         if (this.cover.parent) {
             this.removeChild(this.cover)

@@ -42,7 +42,6 @@ declear class LayersDisplayObjectContainer extends egret.DisplayObjectContainer 
      * 
      * 方法可能抛出的异常：
      *   Error   LayersDisplayObjectContainer 实例还未调用 ensureBasicStyle 进行初始化
-     *   Error   LayersDisplayObjectContainer：Layer 栈为空，无法替换
      */
     replacePeak(layer: egret.DisplayObject): void
 

@@ -14,6 +14,8 @@ class LayersTestUI extends LayersDisplayObjectContainer {
          * NOTE: 务必先调用
          */
         this.ensureBasicStyle(this.stage.stageWidth, this.stage.stageHeight, 0.7)
+
+        global.layerTestUI = this
     }
 
     private init() {
@@ -118,9 +120,14 @@ class LayersTestUI extends LayersDisplayObjectContainer {
         btn1.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
             let layer = this.buildTestLayer()
             this.push(layer)
-            // if (this.layerID >= 3) {
-            //     this.setCloseBtnPos(400 + Math.round(Math.random() * 100), 800 + Math.round(Math.random() * 100))
-            // }
+            if (this.layerID >= 3) {
+                this.setCloseBtnPos(400 + Math.round(Math.random() * 100), 800 + Math.round(Math.random() * 100))
+                if (Math.random() > 0.5) {
+                    this.hideCloseBtn()
+                } else {
+                    this.showCloseBtn()
+                }
+            }
         }, this)
 
         let btn2 = new PureColorButton(240, 70, 52, '关闭当前 Layer', 0X000000, 0XFFFFFF)
