@@ -1,9 +1,12 @@
 class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
+    private bigBox: egret.DisplayObjectContainer
+
     private cover: egret.Shape
     private layerBox: egret.DisplayObjectContainer
     private closeBtn: egret.Sprite
 
     protected layers: Array<egret.DisplayObject>
+    
     private closeBtnPropCache: {
         [propName: number]: {
             visible?: boolean
@@ -16,6 +19,8 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
 
     constructor() {
         super()
+        this.bigBox = new egret.DisplayObjectContainer()
+
         this.cover = new egret.Shape()
         this.layerBox = new egret.DisplayObjectContainer()
 
@@ -38,16 +43,25 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         this.layers = []
         this.closeBtnPropCache = {}
 
-        this.cover.touchEnabled = true
-        this.cover.addEventListener(egret.TouchEvent.TOUCH_TAP, function (event) {
-            // cover 阻截点击事件
+        function coverDisableTouch(event: egret.Event) {
+            // cover 阻止事件穿透
             event.stopPropagation()
             event.stopImmediatePropagation()
-        }, this)
+        }
+        this.cover.touchEnabled = true
+        this.cover.addEventListener(egret.TouchEvent.TOUCH_BEGIN, coverDisableTouch, this)
+        this.cover.addEventListener(egret.TouchEvent.TOUCH_MOVE, coverDisableTouch, this)
+        this.cover.addEventListener(egret.TouchEvent.TOUCH_END, coverDisableTouch, this)
+        this.cover.addEventListener(egret.TouchEvent.TOUCH_TAP, coverDisableTouch, this)
+        
 
         this.closeBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, function (event) {
             this.pop()
         }, this)
+
+        this.bigBox.addChild(this.cover)
+        this.bigBox.addChild(this.layerBox)
+        this.bigBox.addChild(this.closeBtn)
     }
 
     /**
@@ -58,6 +72,9 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
     ensureBasicStyle(width: number, height: number, alpha?: number) {
         this.width = width
         this.height = height
+
+        this.bigBox.width = width
+        this.bigBox.height = height
 
         this.layerBox.width = width
         this.layerBox.height = height
@@ -186,15 +203,13 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
             scaleY: 1
         }, 340, egret.Ease.backInOut)
 
-        if (!this.cover.parent) {
-            this.addChild(this.cover)
-            this.addChild(this.layerBox)
-            this.addChild(this.closeBtn)
+        if (!this.bigBox.parent) {
+            this.addChild(this.bigBox)
         }
 
         let index = this.layers.length - 1
         this.closeBtnPropCache[index] = {
-            visible: this.closeBtnPropCache[index - 1] ? this.closeBtnPropCache[index - 1].visible : true,
+            visible: this.closeBtnPropCache[index - 1] ? this.closeBtnPropCache[index - 1].visible : this.closeBtn.visible,
             x: this.closeBtn.x,
             y: this.closeBtn.y
         }
@@ -239,10 +254,8 @@ class LayersDisplayObjectContainer extends egret.DisplayObjectContainer {
         this.layers = []
         this.closeBtnPropCache = {}
 
-        if (this.cover.parent) {
-            this.removeChild(this.cover)
-            this.removeChild(this.layerBox)
-            this.removeChild(this.closeBtn)
+        if (this.bigBox.parent) {
+            this.removeChild(this.bigBox)
 
             this.dispatchEvent(new egret.Event('emptyLayers'))
         }
